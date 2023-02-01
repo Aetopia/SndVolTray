@@ -166,8 +166,8 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SwitchToThisWindow(hWnd, TRUE);
             GetCursorPos(&pt);
             hMenu = CreatePopupMenu();
-            AppendMenu(hMenu, MF_BYPOSITION | MF_STRING, 1, "Exit");
-            TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
+            AppendMenu(hMenu, 0, 1, "Exit");
+            TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hWnd, NULL);
         };
     case WM_COMMAND:
         if (wParam)
