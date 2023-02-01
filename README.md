@@ -9,6 +9,8 @@ A tray application for Windows' Volume Mixer (`SndVol.exe`) & remake of [Classic
 # Usage
 1. Download the latest release from [GitHub Releases](https://github.com/Aetopia/SndVolTray/releases/latest).
 2. Start `SndVolTray.exe`.
+    > You may add this to startup via Task Scheduler or `shell:startup`.
+    
 3. Tray Icon Operations:    
     - Left clicking the icon once will invoke `SndVol.exe` or Volume Mixer.
     - Double right clicking will prompt if you want to exit the application or not.
