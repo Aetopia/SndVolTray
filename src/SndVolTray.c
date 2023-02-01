@@ -5,7 +5,14 @@ struct
 {
     PROCESS_INFORMATION *pi;
     HWND hWnd;
+    BOOL isForeground;
 } SndVolProcess;
+
+static inline void KillProcess(HANDLE hProcess)
+{
+    TerminateProcess(hProcess, 0);
+    CloseHandle(hProcess);
+}
 
 void SndVolWndProc(HWINEVENTHOOK hWinEventHook,
                    DWORD event,
@@ -15,21 +22,15 @@ void SndVolWndProc(HWINEVENTHOOK hWinEventHook,
                    DWORD idEventThread,
                    DWORD dwmsEventTime)
 {
-    if (event != EVENT_SYSTEM_FOREGROUND)
+    if (event != EVENT_SYSTEM_FOREGROUND && idObject != OBJID_WINDOW && idChild != CHILDID_SELF)
         return;
 
     DWORD pid;
     GetWindowThreadProcessId(hWnd, &pid);
-    if (pid == SndVolProcess.pi->dwProcessId)
-    {
-        SwitchToThisWindow(SndVolProcess.hWnd, TRUE);
+    if (pid == SndVolProcess.pi->dwProcessId || !pid)
         return;
-    };
     UnhookWinEvent(hWinEventHook);
-
-    ShowWindow(SndVolProcess.hWnd, SW_HIDE);
-    TerminateProcess(SndVolProcess.pi->hProcess, 0);
-
+    KillProcess(SndVolProcess.pi->hProcess);
     PostQuitMessage(0);
 }
 
@@ -49,7 +50,6 @@ void SndVolProcessProc(
     UnhookWinEvent(hWinEventHook);
 
     SndVolProcess.hWnd = hWnd;
-    MSG msg;
     RECT wndRect;
     APPBARDATA taskbar = {.cbSize = sizeof(APPBARDATA)};
     int taskbarCX,
@@ -93,6 +93,7 @@ void SndVolProcessProc(
                  0,
                  SWP_NOSIZE);
 
+    MSG msg;
     SetWinEventHook(EVENT_SYSTEM_FOREGROUND,
                     EVENT_SYSTEM_FOREGROUND,
                     NULL,
@@ -103,7 +104,7 @@ void SndVolProcessProc(
     {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
-    }
+    };
 
     PostQuitMessage(0);
 }
@@ -118,6 +119,8 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                  .uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP,
                                  .uCallbackMessage = WM_USER + 1,
                                  .szTip = "Volume Mixer"};
+    static POINT pt;
+    static HMENU hMenu;
 
     switch (uMsg)
     {
@@ -134,7 +137,9 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     case WM_USER + 1:
         switch (lParam)
         {
+        case WM_LBUTTONDBLCLK:
         case WM_LBUTTONDOWN:
+            KillProcess(pi.hProcess);
             CreateProcess("C:\\Windows\\System32\\SndVol.exe", NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
             SetWinEventHook(EVENT_OBJECT_SHOW,
                             EVENT_OBJECT_SHOW,
@@ -144,23 +149,25 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             0,
                             WINEVENT_OUTOFCONTEXT);
             ResumeThread(pi.hThread);
+            CloseHandle(pi.hThread);
             while (GetMessage(&msg, NULL, 0, 0) > 0)
             {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
-            }
-            CloseHandle(pi.hThread);
-            CloseHandle(pi.hProcess);
+            };
             break;
-
-        case WM_RBUTTONDBLCLK:
+        case WM_RBUTTONDOWN:
+            SwitchToThisWindow(hWnd, TRUE);
+            GetCursorPos(&pt);
+            hMenu = CreatePopupMenu();
+            InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, 1, "Exit");
+            TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
+        };
+    case WM_COMMAND:
+        if (wParam == 1)
+        {
             Shell_NotifyIcon(NIM_DELETE, &nid);
-            if (MessageBox(hWnd,
-                           "Exit?",
-                           "SndVolTray",
-                           MB_YESNO | MB_ICONQUESTION | MB_SYSTEMMODAL) == IDYES)
-                ExitProcess(0);
-            Shell_NotifyIcon(NIM_ADD, &nid);
+            ExitProcess(0);
         };
 
     default:
