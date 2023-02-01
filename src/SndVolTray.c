@@ -120,13 +120,14 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             CloseHandle(pi.hThread);
             CloseHandle(pi.hProcess);
+            break;
         case WM_RBUTTONDBLCLK:
             Shell_NotifyIcon(NIM_DELETE, &nid);
             if (MessageBox(hWnd,
                            "Are you sure you want to exit?",
                            "SndVolTray",
                            MB_YESNO | MB_ICONQUESTION | MB_SYSTEMMODAL) == IDYES)
-                PostQuitMessage(0);
+                ExitProcess(0);
             Shell_NotifyIcon(NIM_ADD, &nid);
         };
 
@@ -144,11 +145,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     WNDCLASS wndClass = {.lpfnWndProc = WndProc,
                          .hInstance = hInstance,
                          .lpszClassName = "SndVolTray"};
+    HANDLE mutex = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "SndVolTray");
     MSG msg;
 
-    if (!RegisterClass(&wndClass) ||
-        !CreateWindow("SndVolTray", 0, 0, 0, 0, 0, 0, NULL, NULL, hInstance, NULL))
+    if (mutex ||
+        (!RegisterClass(&wndClass) ||
+         !CreateWindow("SndVolTray", 0, 0, 0, 0, 0, 0, NULL, NULL, hInstance, NULL)))
         return 1;
+    mutex = CreateMutex(NULL, FALSE, "SndVolTray");
+
     while (GetMessage(&msg, NULL, 0, 0) > 0)
     {
         TranslateMessage(&msg);
