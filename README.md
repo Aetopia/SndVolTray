@@ -13,7 +13,7 @@ A tray application for Windows' Volume Mixer (`SndVol.exe`) & remake of [Classic
     
 3. Tray Icon Operations:    
     - Left clicking the icon once will invoke `SndVol.exe` or Volume Mixer.
-    - Double right clicking will prompt if you want to exit the application or not.
+    - Right clicking, will bring a context menu with an `Exit` option.
 
 # Building
 1. Install `GCC` and [`UPX`](https://upx.github.io) for optional compression.
