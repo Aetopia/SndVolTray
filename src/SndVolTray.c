@@ -33,7 +33,10 @@ void SndVolWndProc(HWINEVENTHOOK hWinEventHook,
     DWORD pid;
     GetWindowThreadProcessId(hWnd, &pid);
     if (pid == SndVolProcess.pi->dwProcessId || !pid)
+    {
+        SwitchToThisWindow(hWnd, TRUE);
         return;
+    };
     UnhookWinEvent(hWinEventHook);
     KillProcess(SndVolProcess.pi->hProcess);
     PostQuitMessage(0);
@@ -169,7 +172,7 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             AppendMenu(hMenu, 0, 1, "Exit");
             TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hWnd, NULL);
         };
-        
+
     case WM_COMMAND:
         if (wParam)
         {
