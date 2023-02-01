@@ -1,3 +1,9 @@
+/* 
+SndTrayVol: https://github.com/Aetopia/SndTrayVol
+Author: Aetopia
+License: MIT
+*/
+
 #include <windows.h>
 #include <stdio.h>
 
@@ -160,11 +166,11 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SwitchToThisWindow(hWnd, TRUE);
             GetCursorPos(&pt);
             hMenu = CreatePopupMenu();
-            InsertMenu(hMenu, 0, MF_BYPOSITION | MF_STRING, 1, "Exit");
+            AppendMenu(hMenu, MF_BYPOSITION | MF_STRING, 1, "Exit");
             TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, 0, hWnd, NULL);
         };
     case WM_COMMAND:
-        if (wParam == 1)
+        if (wParam)
         {
             Shell_NotifyIcon(NIM_DELETE, &nid);
             ExitProcess(0);
