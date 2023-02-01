@@ -5,13 +5,8 @@ License: MIT
 */
 
 #include <windows.h>
-#include <stdio.h>
 
-struct
-{
-    PROCESS_INFORMATION *pi;
-    HWND hWnd;
-} SndVolProcess;
+PROCESS_INFORMATION *SndVolProcess;
 
 static inline void KillProcess(HANDLE hProcess)
 {
@@ -27,18 +22,12 @@ void SndVolWndProc(HWINEVENTHOOK hWinEventHook,
                    DWORD idEventThread,
                    DWORD dwmsEventTime)
 {
-    if (event != EVENT_SYSTEM_FOREGROUND && idObject != OBJID_WINDOW && idChild != CHILDID_SELF)
+    if (event != EVENT_SYSTEM_FOREGROUND &&
+        idObject != OBJID_WINDOW &&
+        idChild != CHILDID_SELF)
         return;
-
-    DWORD pid;
-    GetWindowThreadProcessId(hWnd, &pid);
-    if (pid == SndVolProcess.pi->dwProcessId || !pid)
-    {
-        SwitchToThisWindow(hWnd, TRUE);
-        return;
-    };
     UnhookWinEvent(hWinEventHook);
-    KillProcess(SndVolProcess.pi->hProcess);
+    KillProcess(SndVolProcess->hProcess);
     PostQuitMessage(0);
 }
 
@@ -57,7 +46,6 @@ void SndVolProcessProc(
         return;
     UnhookWinEvent(hWinEventHook);
 
-    SndVolProcess.hWnd = hWnd;
     RECT wndRect;
     MSG msg;
     APPBARDATA taskbar = {.cbSize = sizeof(APPBARDATA)};
@@ -130,7 +118,7 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
         HICON hIcon;
-        SndVolProcess.pi = &pi;
+        SndVolProcess = &pi;
         WM_TASKBARCREATED = RegisterWindowMessage("TaskbarCreated");
         ExtractIconEx("C:\\Windows\\System32\\SndVol.exe", 0, NULL, &hIcon, 1);
         nid.hWnd = hWnd;
