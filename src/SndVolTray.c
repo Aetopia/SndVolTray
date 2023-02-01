@@ -21,7 +21,10 @@ void SndVolWndProc(HWINEVENTHOOK hWinEventHook,
     DWORD pid;
     GetWindowThreadProcessId(hWnd, &pid);
     if (pid == SndVolProcess.pi->dwProcessId)
+    {
+        SwitchToThisWindow(SndVolProcess.hWnd, TRUE);
         return;
+    };
     UnhookWinEvent(hWinEventHook);
 
     ShowWindow(SndVolProcess.hWnd, SW_HIDE);
@@ -121,7 +124,7 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             CloseHandle(pi.hThread);
             CloseHandle(pi.hProcess);
             break;
-            
+
         case WM_RBUTTONDBLCLK:
             Shell_NotifyIcon(NIM_DELETE, &nid);
             if (MessageBox(hWnd,
