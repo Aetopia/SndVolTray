@@ -48,19 +48,47 @@ void SndVolProcessProc(
         return;
     UnhookWinEvent(hWinEventHook);
 
-    POINT point;
-    RECT rect;
-    MONITORINFO mi = {.cbSize = sizeof(MONITORINFO)};
-    MSG msg;
     SndVolProcess.hWnd = hWnd;
+    MSG msg;
+    RECT wndRect;
+    APPBARDATA taskbar = {.cbSize = sizeof(taskbar)};
+    int taskbarCX,
+        taskbarCY,
+        wndX,
+        wndY,
+        wndCX,
+        wndCY;
 
-    GetCursorPos(&point);
-    GetWindowRect(hWnd, &rect);
-    GetMonitorInfo(MonitorFromPoint(point, MONITOR_DEFAULTTONEAREST), &mi);
+    SHAppBarMessage(ABM_GETTASKBARPOS, &taskbar);
+    GetWindowRect(hWnd, &wndRect);
+    taskbarCX = taskbar.rc.right - taskbar.rc.left;
+    taskbarCY = taskbar.rc.bottom - taskbar.rc.top;
+    wndCX = wndRect.right - wndRect.left;
+    wndCY = wndRect.bottom - wndRect.top;
+
+    switch (taskbar.uEdge)
+    {
+    case ABE_LEFT:
+        wndX = taskbar.rc.right;
+        wndY = taskbarCY - wndCY;
+        break;
+    case ABE_TOP:
+        wndX = taskbarCX - wndCX;
+        wndY = taskbar.rc.bottom;
+        break;
+    case ABE_RIGHT:
+        wndX = taskbar.rc.left - wndCX;
+        wndY = taskbarCY - wndCY;
+        break;
+    case ABE_BOTTOM:
+        wndX = taskbarCX - wndCX;
+        wndY = taskbar.rc.top - wndCY;
+        break;
+    };
     SetWindowPos(hWnd,
                  0,
-                 mi.rcWork.right - (rect.right - rect.left),
-                 mi.rcWork.bottom - (rect.bottom - rect.top),
+                 wndX,
+                 wndY,
                  0,
                  0,
                  SWP_NOSIZE);

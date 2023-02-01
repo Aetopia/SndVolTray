@@ -2,7 +2,7 @@
 A tray application for Windows' Volume Mixer (`SndVol.exe`) & remake of [ClassicMixer](https://github.com/7gxycn08/ClassicMixer) in **`C`**.
 
 # Features
-1. The application spawns a `SndVol.exe` instance at the notification area on the monitor, the tray icon from invoked from.
+1. The application spawns a `SndVol.exe` instance at the notification area of the taskbar.
 2. The application attempts to emulate behavior of taskbar flyouts for `SndVol.exe`.
 3. Extremely lightweight with UPX compression!
 
