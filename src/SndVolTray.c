@@ -51,7 +51,7 @@ void SndVolProcessProc(
     SndVolProcess.hWnd = hWnd;
     MSG msg;
     RECT wndRect;
-    APPBARDATA taskbar = {.cbSize = sizeof(taskbar)};
+    APPBARDATA taskbar = {.cbSize = sizeof(APPBARDATA)};
     int taskbarCX,
         taskbarCY,
         wndX,
@@ -156,7 +156,7 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_RBUTTONDBLCLK:
             Shell_NotifyIcon(NIM_DELETE, &nid);
             if (MessageBox(hWnd,
-                           "Are you sure you want to exit?",
+                           "Exit?",
                            "SndVolTray",
                            MB_YESNO | MB_ICONQUESTION | MB_SYSTEMMODAL) == IDYES)
                 ExitProcess(0);
