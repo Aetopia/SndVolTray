@@ -1,4 +1,4 @@
-/* 
+/*
 SndTrayVol: https://github.com/Aetopia/SndTrayVol
 Author: Aetopia
 License: MIT
@@ -11,7 +11,6 @@ struct
 {
     PROCESS_INFORMATION *pi;
     HWND hWnd;
-    BOOL isForeground;
 } SndVolProcess;
 
 static inline void KillProcess(HANDLE hProcess)
@@ -57,6 +56,7 @@ void SndVolProcessProc(
 
     SndVolProcess.hWnd = hWnd;
     RECT wndRect;
+    MSG msg;
     APPBARDATA taskbar = {.cbSize = sizeof(APPBARDATA)};
     int taskbarCX,
         taskbarCY,
@@ -99,7 +99,6 @@ void SndVolProcessProc(
                  0,
                  SWP_NOSIZE);
 
-    MSG msg;
     SetWinEventHook(EVENT_SYSTEM_FOREGROUND,
                     EVENT_SYSTEM_FOREGROUND,
                     NULL,
@@ -119,14 +118,10 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     static UINT WM_TASKBARCREATED;
     static PROCESS_INFORMATION pi;
-    static STARTUPINFO si = {.cb = sizeof(STARTUPINFO)};
-    static MSG msg;
     static NOTIFYICONDATA nid = {.cbSize = sizeof(NOTIFYICONDATA),
                                  .uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP,
                                  .uCallbackMessage = WM_USER + 1,
                                  .szTip = "Volume Mixer"};
-    static POINT pt;
-    static HMENU hMenu;
 
     switch (uMsg)
     {
@@ -145,6 +140,8 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
         case WM_LBUTTONDBLCLK:
         case WM_LBUTTONDOWN:
+            STARTUPINFO si = {.cb = sizeof(STARTUPINFO)};
+            MSG msg;
             KillProcess(pi.hProcess);
             CreateProcess("C:\\Windows\\System32\\SndVol.exe", NULL, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
             SetWinEventHook(EVENT_OBJECT_SHOW,
@@ -162,13 +159,17 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 DispatchMessage(&msg);
             };
             break;
+
         case WM_RBUTTONDOWN:
+            POINT pt;
+            HMENU hMenu;
             SwitchToThisWindow(hWnd, TRUE);
             GetCursorPos(&pt);
             hMenu = CreatePopupMenu();
             AppendMenu(hMenu, 0, 1, "Exit");
             TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, hWnd, NULL);
         };
+        
     case WM_COMMAND:
         if (wParam)
         {
