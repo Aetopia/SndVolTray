@@ -121,6 +121,7 @@ LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             CloseHandle(pi.hThread);
             CloseHandle(pi.hProcess);
             break;
+            
         case WM_RBUTTONDBLCLK:
             Shell_NotifyIcon(NIM_DELETE, &nid);
             if (MessageBox(hWnd,
